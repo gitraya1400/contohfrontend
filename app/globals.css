@@ -182,3 +182,33 @@ body {
 .has-event-dot .rdp-button:hover:after {
   background-color: var(--primary-foreground);
 }
+
+.has-event-dot .rdp-button {
+  /* Kita butuh 'position: relative' agar 'dot' bisa diposisikan */
+  position: relative;
+}
+
+.has-event-dot .rdp-button:after {
+  /* Ini adalah 'dot' (titik) nya */
+  content: '';
+  position: absolute;
+  bottom: 6px; /* Posisikan 6px dari bawah */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  
+  /* Gunakan variabel --primary (bukan oklch) 
+    karena file ini mendefinisikannya di @theme inline
+  */
+  background-color: var(--primary);
+}
+
+/* Saat tanggalnya aktif (dipilih), 
+  ganti warna 'dot' jadi putih agar tetap terlihat.
+*/
+.has-event-dot .rdp-button[aria-selected="true"]:after,
+.has-event-dot .rdp-button:hover:after {
+  background-color: var(--primary-foreground);
+}

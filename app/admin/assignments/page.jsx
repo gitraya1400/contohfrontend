@@ -249,11 +249,15 @@ export default function AssignmentsPage() {
   const handleSaveAssignments = async (asesiId, assignmentsData) => {
     setSavingAsesiId(asesiId); 
     
-    if (assignmentsData.length === 0) {
-      alert("Belum ada asesor yang ditugaskan untuk asesi ini.")
-      setSavingAsesiId(null)
-      return
+    // --- (MODIFIKASI VALIDASI) ---
+    // Validasi ini sekarang seharusnya sudah ditangani oleh tombol disabled,
+    // tapi kita tambahkan sebagai pengaman ganda.
+    if (tipeUjian === "TEORI" && assignmentsData.length < units.length) {
+       alert("Gagal: Pastikan semua unit kompetensi memiliki asesor.");
+       setSavingAsesiId(null);
+       return;
     }
+    // --- (BATAS MODIFIKASI) ---
 
     try {
       await mockAssignAsesorPerUnit(asesiId, assignmentsData) 
@@ -268,11 +272,24 @@ export default function AssignmentsPage() {
   }
   
   const handleSaveTeori = (asesiId) => {
+    // --- (MODIFIKASI VALIDASI) ---
+    // Cek dulu apakah semua unit sudah terisi
+    const allAssigned = units.every(
+      unit => teoriAssignments[`${asesiId}-${unit.id}`]
+    );
+    
+    if (!allAssigned) {
+      alert("Gagal: Pastikan semua unit kompetensi memiliki asesor sebelum menyimpan.");
+      return; 
+    }
+    // --- (BATAS MODIFIKASI) ---
+
     const assignmentsForAsesi = units.map(unit => ({
       unitId: unit.nomorUnit,
       tipe: "TEORI",
-      asesorId: teoriAssignments[`${asesiId}-${unit.id}`] || null
-    })).filter(a => a.asesorId); 
+      asesorId: teoriAssignments[`${asesi.id}-${unit.id}`] // Sekarang kita tahu ini tidak null
+    }));
+    // .filter(a => a.asesorId); // <-- Filter ini tidak lagi diperlukan jika validasi di atas aktif
 
     handleSaveAssignments(asesiId, assignmentsForAsesi)
   }
@@ -500,47 +517,72 @@ export default function AssignmentsPage() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {paginatedAsesi.map(asesi => (
-                            <TableRow key={asesi.id} className="hover:bg-gray-50">
-                              <TableCell className="sticky left-0 bg-white hover:bg-gray-50 z-10 w-[250px]">
-                                <p className="font-medium text-gray-900">{asesi.nama}</p>
-                                <p className="text-sm text-gray-500">{asesi.nim}</p>
-                                {asesi.kelas && <span className="text-xs text-blue-600 font-medium">{asesi.kelas}</span>}
-                              </TableCell>
-                              {units.map(unit => {
-                                 const assignmentKey = `${asesi.id}-${unit.id}`
-                                 const currentAsesorId = teoriAssignments[assignmentKey] || "" 
-                                 return (
-                                   <TableCell key={unit.id} className="w-[200px]">
-                                     <Select
-                                        value={currentAsesorId}
-                                        onValueChange={(value) => handleTeoriAssignmentChange(asesi.id, unit.id, value)}
-                                      >
-                                        <SelectTrigger className="bg-gray-50 w-full">
-                                          <SelectValue placeholder="-- Pilih Asesor --" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          {asesorList.map(asesor => (
-                                            <SelectItem key={asesor.id} value={asesor.id}>
-                                              {asesor.nama}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                   </TableCell>
-                                 )
-                              })}
-                              <TableCell className="sticky right-0 bg-white hover:bg-gray-50 z-10 w-[120px] text-center">
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleSaveTeori(asesi.id)}
-                                  disabled={savingAsesiId === asesi.id}
-                                >
-                                  {savingAsesiId === asesi.id ? <Spinner className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                          {paginatedAsesi.map(asesi => {
+                            // ==========================================================
+                            // --- (INI DIA LOGIKA BARUNYA) ---
+                            // ==========================================================
+                            const isThisAsesiSaving = savingAsesiId === asesi.id;
+                            // Cek apakah SEMUA unit untuk asesi ini sudah punya nilai di 'teoriAssignments'
+                            const areAllUnitsAssigned = units.every(
+                              unit => teoriAssignments[`${asesi.id}-${unit.id}`]
+                            );
+                            // ==========================================================
+                            // --- (BATAS LOGIKA BARU) ---
+                            // ==========================================================
+
+                            return (
+                              <TableRow key={asesi.id} className="hover:bg-gray-50">
+                                <TableCell className="sticky left-0 bg-white hover:bg-gray-50 z-10 w-[250px]">
+                                  <p className="font-medium text-gray-900">{asesi.nama}</p>
+                                  <p className="text-sm text-gray-500">{asesi.nim}</p>
+                                  {asesi.kelas && <span className="text-xs text-blue-600 font-medium">{asesi.kelas}</span>}
+                                </TableCell>
+                                {units.map(unit => {
+                                  const assignmentKey = `${asesi.id}-${unit.id}`
+                                  const currentAsesorId = teoriAssignments[assignmentKey] || "" 
+                                  return (
+                                    <TableCell key={unit.id} className="w-[200px]">
+                                      <Select
+                                          value={currentAsesorId}
+                                          onValueChange={(value) => handleTeoriAssignmentChange(asesi.id, unit.id, value)}
+                                        >
+                                          <SelectTrigger className="bg-gray-50 w-full">
+                                            <SelectValue placeholder="-- Pilih Asesor --" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {asesorList.map(asesor => (
+                                              <SelectItem key={asesor.id} value={asesor.id}>
+                                                {asesor.nama}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                    </TableCell>
+                                  )
+                                })}
+                                <TableCell className="sticky right-0 bg-white hover:bg-gray-50 z-10 w-[120px] text-center">
+                                  
+                                  {/* ================================================== */}
+                                  {/* --- (INI DIA PERUBAHAN DI TOMBOL) --- */}
+                                  {/* ================================================== */}
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleSaveTeori(asesi.id)}
+                                    // Tombol disable jika sedang saving ATAU jika semua unit belum terisi
+                                    disabled={isThisAsesiSaving || !areAllUnitsAssigned}
+                                    // Tambahkan 'title' untuk memberi tahu admin kenapa tombolnya mati
+                                    title={!areAllUnitsAssigned ? "Harap tugaskan asesor untuk SEMUA unit" : "Simpan Penugasan"}
+                                  >
+                                    {isThisAsesiSaving ? <Spinner className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                                  </Button>
+                                  {/* ================================================== */}
+                                  {/* --- (BATAS PERUBAHAN) --- */}
+                                  {/* ================================================== */}
+
+                                </TableCell>
+                              </TableRow>
+                            )
+                          })}
                         </TableBody>
                       </Table>
                     </div>
