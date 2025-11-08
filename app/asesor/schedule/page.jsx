@@ -267,6 +267,19 @@ export default function AsesorSchedulePage() {
 
                             <h4 className="font-semibold mt-2">{event.judul}</h4>
                             <p className="text-sm text-muted-foreground mt-1">{event.deskripsi}</p>
+                            
+                            {/* Tambahkan info pemateri di sini */}
+                            {event.pemateriNama && (
+                              <div className={`flex items-center gap-1.5 mt-3 text-sm ${
+                                event.isPemateri 
+                                  ? "text-blue-700 font-semibold" 
+                                  : "text-gray-600"
+                              }`}>
+                                <UserIcon className="w-4 h-4" />
+                                Pemateri: {event.pemateriNama} 
+                                {event.isPemateri && " (Anda)"}
+                              </div>
+                            )}
 
                             <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
                               <Clock className="w-4 h-4" />
@@ -287,6 +300,7 @@ export default function AsesorSchedulePage() {
                           </div>
                         </div>
                       </div>
+                      // --- (BATAS PERUBAHAN UI) ---
                     ))}
                   </div>
                 )}
