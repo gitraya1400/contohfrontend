@@ -1,52 +1,54 @@
-"use client";
+"use client"
 
-import { useEffect, useState, useMemo } from "react";
-import { MainLayout } from "@/components/layout/main-layout";
-import { useAuth } from "@/lib/auth-context";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Calendar as CalendarIcon, PlusCircle, AlertCircle, Clock, Users, Video, Info, UserCheck, Edit2 } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  mockGetSesiUjianOffline,
-  mockCreateSesiUjianOffline,
+import React, { useEffect, useState, useMemo } from "react"
+import { MainLayout } from "@/components/layout/main-layout"
+import { useAuth } from "@/lib/auth-context"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Calendar as CalendarIcon, PlusCircle, AlertCircle, Clock, Users, Video, Info, UserCheck, Edit2, User as UserIcon } from "lucide-react" // <-- Tambahkan UserIcon
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { 
+  mockGetSesiUjianOffline, 
+  mockCreateSesiUjianOffline, 
   mockGetAllSkema,
-  mockGetLinimasa, // <-- BARU
-  mockCreateLinimasa, // <-- BARU
-} from "@/lib/api-mock";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useRouter } from "next/navigation";
-import { Textarea } from "@/components/ui/textarea";
+  mockGetLinimasa, 
+  mockCreateLinimasa,
+  mockGetAsesorUsers // <-- BARU: Impor fungsi untuk ambil asesor
+} from "@/lib/api-mock"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useRouter } from "next/navigation"
+import { Textarea } from "@/components/ui/textarea"
 
 // ===============================================================
 // MODAL 1: Buat Sesi Ujian (Offline)
+// (Tidak ada perubahan di modal ini)
 // ===============================================================
 function CreateSesiModal({ skemaOptions, onSesiCreated }) {
-  const [open, setOpen] = useState(false);
-  const [skemaId, setSkemaId] = useState("");
-  const [tipeUjian, setTipeUjian] = useState("");
-  const [tanggal, setTanggal] = useState(null);
-  const [waktu, setWaktu] = useState("");
-  const [ruangan, setRuangan] = useState("");
-  const [kapasitas, setKapasitas] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
+  const [open, setOpen] = useState(false)
+  const [skemaId, setSkemaId] = useState("")
+  const [tipeUjian, setTipeUjian] = useState("")
+  const [tanggal, setTanggal] = useState(null)
+  const [waktu, setWaktu] = useState("")
+  const [ruangan, setRuangan] = useState("")
+  const [kapasitas, setKapasitas] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState(null)
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
+    e.preventDefault()
+    setError(null)
     if (!skemaId || !tipeUjian || !tanggal || !waktu || !ruangan || !kapasitas) {
-      setError("Semua field wajib diisi.");
-      return;
+      setError("Semua field wajib diisi.")
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
       const sesiData = {
         skemaId,
@@ -55,23 +57,23 @@ function CreateSesiModal({ skemaOptions, onSesiCreated }) {
         waktu,
         ruangan,
         kapasitas: parseInt(kapasitas),
-      };
-      const newSesi = await mockCreateSesiUjianOffline(sesiData);
-      onSesiCreated(newSesi);
-      setOpen(false);
+      }
+      const newSesi = await mockCreateSesiUjianOffline(sesiData)
+      onSesiCreated(newSesi)
+      setOpen(false)
       // Reset form
-      setSkemaId("");
-      setTipeUjian("");
-      setTanggal(null);
-      setWaktu("");
-      setRuangan("");
-      setKapasitas("");
+      setSkemaId("")
+      setTipeUjian("")
+      setTanggal(null)
+      setWaktu("")
+      setRuangan("")
+      setKapasitas("")
     } catch (err) {
-      setError(err.message || "Gagal membuat sesi.");
+      setError(err.message || "Gagal membuat sesi.")
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -84,7 +86,9 @@ function CreateSesiModal({ skemaOptions, onSesiCreated }) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Buat Sesi Ujian Offline</DialogTitle>
-          <DialogDescription>Buat jadwal untuk ujian tatap muka (Ujian Teori / Unjuk Diri).</DialogDescription>
+          <DialogDescription>
+            Buat jadwal untuk ujian tatap muka (Ujian Teori / Unjuk Diri).
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -95,9 +99,7 @@ function CreateSesiModal({ skemaOptions, onSesiCreated }) {
               </SelectTrigger>
               <SelectContent>
                 {skemaOptions.map((skema) => (
-                  <SelectItem key={skema.id} value={skema.id}>
-                    {skema.judul}
-                  </SelectItem>
+                  <SelectItem key={skema.id} value={skema.id}>{skema.judul}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -110,7 +112,7 @@ function CreateSesiModal({ skemaOptions, onSesiCreated }) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="TEORI">Ujian Teori (Offline)</SelectItem>
-                <SelectItem value="UNJUK_DIRI">Ujian Unjuk Diri</SelectItem>
+                <SelectItem value="UNJUK_DIRI">Ujian Unjuk Diri</SelectItem> 
               </SelectContent>
             </Select>
           </div>
@@ -150,9 +152,7 @@ function CreateSesiModal({ skemaOptions, onSesiCreated }) {
             </Alert>
           )}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Batal
-            </Button>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Batal</Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Menyimpan..." : "Simpan Sesi"}
             </Button>
@@ -160,33 +160,35 @@ function CreateSesiModal({ skemaOptions, onSesiCreated }) {
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 // ===============================================================
 // MODAL 2: Buat Kegiatan Linimasa (Zoom, Pengumuman)
+// (MODIFIKASI DI SINI)
 // ===============================================================
-function CreateLinimasaModal({ skemaOptions, onEventCreated }) {
-  const [open, setOpen] = useState(false);
-  const [skemaId, setSkemaId] = useState("UMUM");
-  const [tipe, setTipe] = useState("PEMBELAJARAN");
-  const [judul, setJudul] = useState("");
-  const [deskripsi, setDeskripsi] = useState("");
-  const [tanggal, setTanggal] = useState(null);
-  const [waktu, setWaktu] = useState("");
-  const [urlZoom, setUrlZoom] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
+function CreateLinimasaModal({ skemaOptions, asesorList, onEventCreated }) {
+  const [open, setOpen] = useState(false)
+  const [skemaId, setSkemaId] = useState("UMUM")
+  const [tipe, setTipe] = useState("PEMBELAJARAN")
+  const [judul, setJudul] = useState("")
+  const [deskripsi, setDeskripsi] = useState("")
+  const [tanggal, setTanggal] = useState(null)
+  const [waktu, setWaktu] = useState("")
+  const [urlZoom, setUrlZoom] = useState("")
+  const [pemateriAsesorId, setPemateriAsesorId] = useState("") // <-- STATE BARU
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState(null)
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
+    e.preventDefault()
+    setError(null)
     if (!judul || !deskripsi || !tanggal) {
-      setError("Judul, Deskripsi, dan Tanggal wajib diisi.");
-      return;
+      setError("Judul, Deskripsi, dan Tanggal wajib diisi.")
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
       const eventData = {
         skemaId,
@@ -196,24 +198,21 @@ function CreateLinimasaModal({ skemaOptions, onEventCreated }) {
         tanggal,
         waktu: waktu || "Sepanjang hari",
         urlZoom: tipe === "PEMBELAJARAN" ? urlZoom : "",
-      };
-      const newEvent = await mockCreateLinimasa(eventData);
-      onEventCreated(newEvent);
-      setOpen(false);
+        pemateriAsesorId: tipe === "PEMBELAJARAN" ? pemateriAsesorId : "", // <-- KIRIM ID PEMATERI
+      }
+      const newEvent = await mockCreateLinimasa(eventData)
+      onEventCreated(newEvent)
+      setOpen(false)
       // Reset form
-      setSkemaId("UMUM");
-      setTipe("PEMBELAJARAN");
-      setJudul("");
-      setDeskripsi("");
-      setTanggal(null);
-      setWaktu("");
-      setUrlZoom("");
+      setSkemaId("UMUM"); setTipe("PEMBELAJARAN"); setJudul(""); setDeskripsi("");
+      setTanggal(null); setWaktu(""); setUrlZoom("");
+      setPemateriAsesorId(""); // <-- RESET STATE BARU
     } catch (err) {
-      setError(err.message || "Gagal membuat kegiatan.");
+      setError(err.message || "Gagal membuat kegiatan.")
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -226,9 +225,12 @@ function CreateLinimasaModal({ skemaOptions, onEventCreated }) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Buat Kegiatan Linimasa</DialogTitle>
-          <DialogDescription>Buat jadwal non-ujian (Sesi Zoom, Pengumuman, dll) untuk Asesi.</DialogDescription>
+          <DialogDescription>
+            Buat jadwal non-ujian (Sesi Zoom, Pengumuman, dll) untuk Asesi.
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* (PERBAIKAN: Ubah <div /> jadi <form />) */}
+        <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-4">
           <div className="space-y-2">
             <Label htmlFor="judul-kegiatan">Judul Kegiatan</Label>
             <Input id="judul-kegiatan" value={judul} onChange={(e) => setJudul(e.target.value)} placeholder="Contoh: Sosialisasi Skema ADS" />
@@ -241,27 +243,21 @@ function CreateLinimasaModal({ skemaOptions, onEventCreated }) {
             <div className="space-y-2">
               <Label htmlFor="tipe-kegiatan">Tipe Kegiatan</Label>
               <Select value={tipe} onValueChange={setTipe}>
-                <SelectTrigger id="tipe-kegiatan">
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger id="tipe-kegiatan"><SelectValue/></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="PEMBELAJARAN">Sesi Pembelajaran (Zoom)</SelectItem>
                   <SelectItem value="PENGUMUMAN">Pengumuman</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
+             <div className="space-y-2">
               <Label htmlFor="skema-kegiatan">Untuk Skema</Label>
               <Select value={skemaId} onValueChange={setSkemaId}>
-                <SelectTrigger id="skema-kegiatan">
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger id="skema-kegiatan"><SelectValue/></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="UMUM">Semua Skema (Umum)</SelectItem>
                   {skemaOptions.map((skema) => (
-                    <SelectItem key={skema.id} value={skema.id}>
-                      {skema.judul}
-                    </SelectItem>
+                    <SelectItem key={skema.id} value={skema.id}>{skema.judul}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -287,12 +283,30 @@ function CreateLinimasaModal({ skemaOptions, onEventCreated }) {
               <Input id="waktu-kegiatan" value={waktu} onChange={(e) => setWaktu(e.target.value)} placeholder="Contoh: 09:00" />
             </div>
           </div>
-          {tipe === "PEMBELAJARAN" && (
-            <div className="space-y-2">
-              <Label htmlFor="url-zoom">URL Zoom (Opsional)</Label>
-              <Input id="url-zoom" value={urlZoom} onChange={(e) => setUrlZoom(e.target.value)} placeholder="https://zoom.us/j/..." />
-            </div>
-          )}
+           {tipe === 'PEMBELAJARAN' && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="url-zoom">URL Zoom (Opsional)</Label>
+                <Input id="url-zoom" value={urlZoom} onChange={(e) => setUrlZoom(e.target.value)} placeholder="https://zoom.us/j/..." />
+              </div>
+              {/* --- (BLOK DROPDOWN ASESOR BARU) --- */}
+              <div className="space-y-2">
+                <Label htmlFor="pemateri-asesor">Pemateri (Opsional)</Label>
+                <Select value={pemateriAsesorId} onValueChange={setPemateriAsesorId}>
+                  <SelectTrigger id="pemateri-asesor">
+                    <SelectValue placeholder="-- Pilih Pemateri --" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">-- Tidak Ditugaskan --</SelectItem>
+                    {asesorList.map((asesor) => (
+                      <SelectItem key={asesor.id} value={asesor.id}>{asesor.nama}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* --- (BATAS BLOK BARU) --- */}
+            </>
+           )}
           {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
@@ -300,26 +314,26 @@ function CreateLinimasaModal({ skemaOptions, onEventCreated }) {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Batal
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
+          {/* (PERBAIKAN: Pindahkan <DialogFooter> ke luar <form />) */}
+        </form>
+        <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Batal</Button>
+            {/* (PERBAIKAN: Ubah type="submit" dan tambahkan 'form' id) */}
+            <Button type="submit" form="linimasa-form" disabled={isSubmitting} onClick={handleSubmit}>
               {isSubmitting ? "Menyimpan..." : "Simpan Kegiatan"}
             </Button>
-          </DialogFooter>
-        </form>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 // ===============================================================
-// KARTU EVENT UNTUK ADMIN (DENGAN TOMBOL EDIT & PLOTTING)
+// KARTU EVENT UNTUK ADMIN (MODIFIKASI: TAMPILKAN PEMATERI)
 // ===============================================================
 const AdminEventCard = ({ event, onEdit }) => {
   const router = useRouter();
-
+  
   let Icon = Info;
   let colors = "bg-blue-50 border-blue-200 text-blue-800";
   let skemaLabel = event.skemaId === "UMUM" ? "Semua Skema" : event.skemaId;
@@ -339,9 +353,21 @@ const AdminEventCard = ({ event, onEdit }) => {
     <div className={`p-4 rounded-lg border ${colors} flex items-start gap-4`}>
       <Icon className="w-5 h-5 mt-1 flex-shrink-0" />
       <div className="flex-1">
-        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${colors} border border-current`}>{skemaLabel}</span>
+        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${colors} border border-current`}>
+          {skemaLabel}
+        </span>
         <h4 className="font-semibold mt-1">{event.title}</h4>
         <p className="text-sm">{event.description}</p>
+        
+        {/* --- (BLOK BARU UNTUK TAMPILKAN PEMATERI) --- */}
+        {event.pemateriNama && (
+          <div className="flex items-center gap-1.5 mt-2 text-sm text-gray-700">
+            <UserIcon className="w-4 h-4 text-gray-500" />
+            Pemateri: <span className="font-medium">{event.pemateriNama}</span>
+          </div>
+        )}
+        {/* --- (BATAS BLOK BARU) --- */}
+
         <div className="flex items-center gap-4 mt-2 text-sm">
           <span className="flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5" />
@@ -349,17 +375,19 @@ const AdminEventCard = ({ event, onEdit }) => {
           </span>
           {event.url && (
             <Button size="sm" variant="link" asChild className="p-0 h-auto">
-              <a href={event.url} target="_blank" rel="noopener noreferrer">
-                Link Zoom
-              </a>
+              <a href={event.url} target="_blank" rel="noopener noreferrer">Link Zoom</a>
             </Button>
           )}
         </div>
       </div>
       <div className="flex flex-col gap-2">
-        {/* Tombol Plotting hanya muncul untuk Sesi Ujian */}
         {event.type === "exam" && (
-          <Button size="sm" variant="outline" className="bg-white" onClick={() => router.push(`/admin/offline-exam/${event.id}`)}>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="bg-white"
+            onClick={() => router.push(`/admin/offline-exam/${event.id}`)}
+          >
             <Users className="w-4 h-4 mr-2" />
             Atur Peserta
           </Button>
@@ -370,47 +398,54 @@ const AdminEventCard = ({ event, onEdit }) => {
         </Button>
       </div>
     </div>
-  );
-};
+  )
+}
 
 // ===============================================================
-// HALAMAN UTAMA (DI-REFAKTOR)
+// HALAMAN UTAMA (MODIFIKASI: LOAD ASESOR & MERGE DATA)
 // ===============================================================
 export default function TimelinePage() {
-  const { user, loading: isAuthLoading } = useAuth();
-  const router = useRouter();
-
-  const [date, setDate] = useState(new Date());
-  const [allEvents, setAllEvents] = useState([]);
-  const [eventDates, setEventDates] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [skemaOptions, setSkemaOptions] = useState([]);
-  const [error, setError] = useState(null);
+  const { user, loading: isAuthLoading } = useAuth()
+  const router = useRouter()
+  
+  const [date, setDate] = useState(new Date())
+  const [allEvents, setAllEvents] = useState([])
+  const [eventDates, setEventDates] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [skemaOptions, setSkemaOptions] = useState([])
+  const [asesorList, setAsesorList] = useState([]); // <-- STATE BARU UNTUK ASESOR
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (isAuthLoading) return;
     if (!user) {
-      router.push("/login");
+      router.push("/login")
       return;
     }
-    loadData();
-  }, [user, isAuthLoading, router]);
+    loadData()
+  }, [user, isAuthLoading, router])
 
   const loadData = async () => {
     try {
-      setLoading(true);
-      setError(null);
-
-      const [skemaData, linimasaData, sesiUjianData] = await Promise.all([
+      setLoading(true)
+      setError(null)
+      
+      // --- (MODIFIKASI: TAMBAHKAN mockGetAsesorUsers) ---
+      const [skemaData, linimasaData, sesiUjianData, allAsesorData] = await Promise.all([
         mockGetAllSkema(),
-        mockGetLinimasa("ALL"), // <-- AMBIL SEMUA
-        mockGetSesiUjianOffline("ALL"), // <-- AMBIL SEMUA
+        mockGetLinimasa("ALL"), 
+        mockGetSesiUjianOffline("ALL"),
+        mockGetAsesorUsers() // <-- PANGGIL API ASESOR
       ]);
 
-      setSkemaOptions(skemaData); // Untuk dioper ke Modal
+      setSkemaOptions(skemaData); 
+      setAsesorList(allAsesorData); // <-- SIMPAN DAFTAR ASESOR
+
+      // Buat "kamus" nama asesor untuk merge data
+      const asesorNameMap = new Map(allAsesorData.map(a => [a.id, a.nama]));
 
       // Format data linimasa (Sosialisasi, dll)
-      const formattedLinimasa = linimasaData.map((item) => ({
+      const formattedLinimasa = linimasaData.map(item => ({
         id: item.id,
         date: new Date(item.tanggal).toDateString(),
         title: `[${item.tipe}] ${item.judul}`,
@@ -419,11 +454,13 @@ export default function TimelinePage() {
         url: item.urlZoom,
         type: item.tipe === "PENGUMUMAN" ? "announcement" : "event",
         skemaId: item.skemaId || "UMUM",
-        originalData: item,
+        pemateriAsesorId: item.pemateriAsesorId, // <-- Ambil ID
+        pemateriNama: asesorNameMap.get(item.pemateriAsesorId) || null, // <-- Ambil NAMA
+        originalData: item
       }));
 
       // Format data plotting (Jadwal Ujian PRIBADI)
-      const formattedSesiUjian = sesiUjianData.map((item) => ({
+      const formattedSesiUjian = sesiUjianData.map(item => ({
         id: item.id,
         date: new Date(item.tanggal).toDateString(),
         title: `[UJIAN] ${item.tipeUjian === "TEORI" ? "Ujian Teori" : "Unjuk Diri"}`,
@@ -432,30 +469,30 @@ export default function TimelinePage() {
         url: null,
         type: "exam",
         skemaId: item.skemaId,
-        originalData: item,
+        pemateriNama: null, // Sesi ujian tidak punya pemateri
+        originalData: item
       }));
 
       const combinedEvents = [...formattedLinimasa, ...formattedSesiUjian];
       combinedEvents.sort((a, b) => new Date(a.date) - new Date(b.date)); // Urutkan
-
+      
       setAllEvents(combinedEvents);
-      setEventDates(combinedEvents.map((event) => new Date(event.date)));
+      setEventDates(combinedEvents.map(event => new Date(event.date)));
+      
     } catch (err) {
-      console.error("Error loading events:", err);
-      setError("Gagal memuat jadwal.");
+      console.error("Error loading events:", err)
+      setError("Gagal memuat jadwal.")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  // Fungsi callback untuk me-refresh data setelah modal ditutup
   const onDataChanged = (newEvent) => {
-    loadData(); // Cara termudah adalah reload semua data
-  };
+    loadData(); // Reload semua data
+  }
 
-  // Logika untuk menampilkan event yang dipilih
-  const selectedDateStr = date ? date.toDateString() : new Date().toDateString();
-  const selectedEvents = allEvents.filter((event) => event.date === selectedDateStr);
+  const selectedDateStr = date ? date.toDateString() : new Date().toDateString()
+  const selectedEvents = allEvents.filter(event => event.date === selectedDateStr)
 
   return (
     <MainLayout>
@@ -466,12 +503,19 @@ export default function TimelinePage() {
             <p className="text-muted-foreground mt-1">Atur semua jadwal kegiatan, pengumuman, dan sesi ujian.</p>
           </div>
           <div className="flex gap-2 mt-4 md:mt-0">
-            {/* HAPUS DROPDOWN SKEMA DARI SINI */}
-            <CreateLinimasaModal skemaOptions={skemaOptions} onEventCreated={onDataChanged} />
-            <CreateSesiModal skemaOptions={skemaOptions} onSesiCreated={onDataChanged} />
+            {/* --- (MODIFIKASI: OPER asesorList KE MODAL) --- */}
+            <CreateLinimasaModal 
+              skemaOptions={skemaOptions} 
+              asesorList={asesorList} 
+              onEventCreated={onDataChanged} 
+            />
+            <CreateSesiModal 
+              skemaOptions={skemaOptions} 
+              onSesiCreated={onDataChanged} 
+            />
           </div>
         </div>
-
+        
         {error && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -492,8 +536,8 @@ export default function TimelinePage() {
                   selected={date}
                   onSelect={setDate}
                   className="w-full"
-                  modifiers={{ hasEvent: eventDates }} // <-- Ini logikanya
-                  modifiersClassNames={{ hasEvent: "has-event-dot" }} // <-- Ini kelas CSS-nya
+                  modifiers={{ hasEvent: eventDates }}
+                  modifiersClassNames={{ hasEvent: 'has-event-dot' }}
                 />
               )}
             </CardContent>
@@ -501,7 +545,9 @@ export default function TimelinePage() {
 
           {/* Kolom Kanan: Daftar Kegiatan */}
           <div className="md:col-span-2 space-y-4">
-            <h2 className="text-xl font-semibold">Kegiatan pada {new Date(selectedDateStr).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long" })}</h2>
+            <h2 className="text-xl font-semibold">
+              Kegiatan pada {new Date(selectedDateStr).toLocaleDateString("id-ID", { weekday: 'long', day: 'numeric', month: 'long' })}
+            </h2>
             {loading ? (
               <div className="space-y-4">
                 <Skeleton className="h-24 w-full" />
@@ -513,11 +559,17 @@ export default function TimelinePage() {
                 <AlertDescription>Tidak ada kegiatan yang dijadwalkan pada tanggal ini.</AlertDescription>
               </Alert>
             ) : (
-              selectedEvents.map((event) => <AdminEventCard key={event.id} event={event} onEdit={() => alert(`Logika edit untuk event '${event.title}' belum dibuat`)} />)
+              selectedEvents.map((event) => (
+                <AdminEventCard 
+                  key={event.id} 
+                  event={event} // Event object sekarang sudah berisi 'pemateriNama'
+                  onEdit={() => alert(`Logika edit untuk event '${event.title}' belum dibuat`)} 
+                />
+              ))
             )}
           </div>
         </div>
       </div>
     </MainLayout>
-  );
+  )
 }
